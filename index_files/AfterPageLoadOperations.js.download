@@ -1,0 +1,584 @@
+function initXMLHTTPRequest() {
+    if (window.XMLHttpRequest)
+        return new XMLHttpRequest();
+    else
+        return new ActiveXObject("Microsoft.XMLHTTP");
+}
+var req;
+function CheckOpenSemester(URL, HTTPMode, Params) {
+    if (!HTTPMode)
+        HTTPMode = "Get";
+
+    req = initXMLHTTPRequest();
+    if (req) {
+        req.onreadystatechange = onCheckOpenSemester;
+        req.open(HTTPMode, URL, true);
+        req.send(Params);
+    }
+}
+function onCheckOpenSemester() {
+    if (req.readyState == 4) {
+        var data = req.responseText;
+        if (data == "0") {
+            alert("No Open Semester found....!");
+
+            if (document.URL.indexOf("OpenSemester.aspx") < 0) {
+            
+                // Submit buttons
+                var btnList = document.getElementsByTagName("input");
+                for (var i = 0; i < btnList.length; i++) {
+                    if (btnList.item(i).onclick != null) {
+                        btnList.item(i).disabled = true;
+                        btnList.item(i).title = "button is currently disabled because their is (No Open Semester)";
+                    }
+                }
+
+                // onChange Select
+                btnList = document.getElementsByTagName("select");
+                for (var s = 0; s < btnList.length; s++) {
+                    if (btnList.item(s).onchange != null) {
+                        btnList.item(s).disabled = true;
+                    }
+                }
+
+                // postBack Links
+                btnList = document.getElementsByTagName("a");
+                for (var l = 0; l < btnList.length; l++) {
+                    if (btnList.item(l).href.indexOf("javascript:WebForm_DoPostBackWithOptions") >= 0) {
+                        btnList.item(l).disabled = true;
+                    }
+                }
+            }           
+        }
+        
+    }
+}
+
+//CheckOpenSemester("../../CheckOpenSemester.ashx");
+
+//var prm = Sys.WebForms.PageRequestManager.getInstance();
+//prm.add_endRequest(EndRequest);
+
+//function EndRequest(sender, args) {
+//    CheckOpenSemester("../../CheckOpenSemester.ashx");
+//}
+
+function CourseOpener(edCourseId) {
+    var w = 800;
+    var h = 400;
+    var left = (screen.width / 2) - (w / 2);
+    var top = (screen.height / 2) - (h / 2);
+    //return window.open('../Ed_Course/EntCoursePackageDtls.aspx?EdCourseId=' + edCourseId, '', 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+    return window.open('../../UI/Ed_Course/EntCoursePackageDtls.aspx?EdCourseId=' + edCourseId, '', 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+    
+}
+
+
+function createCookie(name,value,days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime()+(days*24*60*60*1000));
+		var expires = "; expires="+date.toGMTString();
+	}
+	else var expires = "";
+	document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for(var i=0;i < ca.length;i++) {
+		var c = ca[i];
+		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	}
+	return null;
+}
+
+function eraseCookie() {
+//    var name = getHeadNodes();
+//	createCookie(name,"",-1);
+}
+
+function getHeadNodes() {
+    var txt = "";
+    var menu = document.getElementById("ctl00_mnuMain");
+    for (var ni = 0; ni < menu.childNodes.length; ni++) {
+        var node = menu.childNodes.item(ni);
+        if (node.tagName != "UL")
+            continue;
+
+        for (var chi1 = 0; chi1 < node.childNodes.length; chi1++) {
+            var ch1 = node.childNodes.item(chi1);
+            if (ch1.tagName != "UL")
+                continue;
+
+            for (var chi2 = 0; chi2 < ch1.childNodes.length; chi2++) {
+                var ch2 = ch1.childNodes.item(chi2);
+                if (ch2.tagName != "LI")
+                    continue;
+
+                var r = new RegExp(/\s/gi);
+                //txt += "_" + ch2.innerHTML.replace(r, "");
+                txt += "_" + ch2.id.replace(r, "");
+                break;
+            }
+            break;
+        }
+    }
+    return txt;
+}
+function getLeafNodes() {
+    var txt = "";
+    var menu = document.getElementById("ctl00_mnuMain");
+    var i = -1;
+    for (var ni = 0; ni < menu.childNodes.length; ni++) {
+        var node = menu.childNodes.item(ni);
+        if (node.tagName != "UL")
+            continue;
+
+        i++;
+        for (var chi1 = 0; chi1 < node.childNodes.length; chi1++) {
+            var ch1 = node.childNodes.item(chi1);
+            if (ch1.tagName != "UL")
+                continue;
+
+            var isFirst = true;
+            for (var chi2 = 0; chi2 < ch1.childNodes.length; chi2++) {
+                var ch2 = ch1.childNodes.item(chi2);
+                if (ch2.tagName != "LI")
+                    continue;
+
+                if (isFirst) {
+                    isFirst = false;
+                    continue;
+                }
+
+                var str = ch2.style.display;
+                if (str == "")
+                    str = "block";
+
+                txt += i.toString() + ":" + str + "|";
+                break;
+            }
+            break;
+        }
+    }
+    txt += GetMenuDisplay();
+    return txt;
+}
+function setLeafNodes(txt) {
+    var txtParts = txt.toString().split("|");
+    var menu = document.getElementById("ctl00_mnuMain");
+    var i = -1;
+    for (var ni = 0; ni < menu.childNodes.length; ni++) {
+        var node = menu.childNodes.item(ni);
+        if (node.tagName != "UL")
+            continue;
+
+        i++;
+        for (var chi1 = 0; chi1 < node.childNodes.length; chi1++) {
+            var ch1 = node.childNodes.item(chi1);
+            if (ch1.tagName != "UL")
+                continue;
+
+            var isFirst = true;
+            for (var chi2 = 0; chi2 < ch1.childNodes.length; chi2++) {
+                var ch2 = ch1.childNodes.item(chi2);
+                if (ch2.tagName != "LI")
+                    continue;
+
+                if (isFirst) {
+                    isFirst = false;
+                    continue;
+                }
+
+                var simiTxtParts = txtParts[i].split(":");
+                if (simiTxtParts[0] == i.toString()) {
+                    ch2.style.display = simiTxtParts[1];
+                }
+            }
+        }
+    }
+
+    var display = txtParts[txtParts.length-1];
+    SetMenuDisplay(display);
+}
+function GetMenuDisplay()
+{
+    var elem = document.getElementById("hideShow");
+    if (elem.style.display == "")
+        return "block";
+    return elem.style.display;    
+}
+function SetMenuDisplay(display)
+{
+    var elem = document.getElementById("hideShow");
+    if (display == "block")
+    {
+        elem.style.display = "block";
+        document.getElementById("rightCol").style.width = "700px";
+        document.getElementById("spanShowHide").innerText = 'Hide';
+    }
+    else
+    {
+        elem.style.display = "none";
+        document.getElementById("rightCol").style.width = "100%";
+        document.getElementById("spanShowHide").innerText = 'Show';
+    }
+}
+
+function SaveMenuStatus()
+{
+    var name = getHeadNodes();
+    var value = getLeafNodes();
+    createCookie(name,value,30);
+}
+
+function GetMenuStatus() {
+
+    var name = getHeadNodes();
+    var value = readCookie(name);
+    if(value)
+    {
+        setLeafNodes(value);
+    }
+}
+
+//GetMenuStatus();
+
+function processPrint(clientId) {
+    if (document.getElementById != null) {
+        
+        var html = '<HTML>\n<HEAD>\n';
+        if (document.getElementsByTagName != null) {
+            var headTags = document.getElementsByTagName("head");
+            if (headTags.length > 0) {
+                var headSubTags = headTags[0].childNodes;
+                for (var i = 0; i < headSubTags.length; i++) {
+                try
+                {
+                    if (headSubTags[i].nodeName.toLowerCase() != "script" && headSubTags[i].rel.toLowerCase() == "stylesheet") {
+                        html += headSubTags[i].outerHTML;
+                    }
+                    }catch(ex){}
+                }
+            }
+        }
+        html += '\n</HE' + 'AD>\n<BODY>\n';
+
+        var gridId = clientId.id;
+        var printReadyElem = document.getElementById(gridId);
+
+        if (printReadyElem == null) {
+            printReadyElem = document.getElementById(clientId);
+        }
+
+        if (printReadyElem != null) html += printReadyElem.outerHTML;
+        else {
+            alert("Error, no contents.");
+            return;
+        }
+
+        html += '\n</BO' + 'DY>\n</HT' + 'ML>';
+
+        var re = /<A.*href=(.*?)?>/g;
+        var replacementpattern = "";
+        html = html.replace(re, replacementpattern);
+
+        re = /<\/A>/g;
+        html = html.replace(re, replacementpattern);
+
+        re = /<SCRIPT(.*?)?<\/SCRIPT>/g;
+        html = html.replace(re, replacementpattern);
+
+        var printWin = window.open("", "processPrint", "location=0,status=0,scrollbars=1");
+        printWin.document.open();
+        printWin.document.write(html);
+        printWin.document.close();
+        printWin.print();
+    } else alert("Browser not supported.");
+}
+
+function ShowCourses(FacId, AcadYearId, SemId, StudId) {
+    var url = '../StudentView/StudCurrentCourses.aspx';
+    var params = "StudID=" + StudId + "&FacID=" + FacId + "&AcadYearID=" + AcadYearId + "&SemID=" + SemId + "&dt=" + Date().toString();
+    var style = "center:1;scroll=1;status:0;dialogWidth:610px;dialogHeight:275px";
+
+    url += "?" + params;
+
+    var ret = window.showModalDialog(url, null, style);
+    if (ret != null) {
+        if (ret == "T") {
+
+        }
+        else return false;
+    }
+    else
+        return false;
+}
+
+function SubCourses(args,CourseRegId) {
+    var url = '../StudentView/SelectSubCourse.aspx';
+    var params = "CourseRegId=" + CourseRegId + "&dt=" + Date().toString();
+    var style = "center:1;scroll=0;status:0;dialogWidth:500px;dialogHeight:100px";
+
+    url += "?" + params;
+
+    var ret = window.showModalDialog(url, null, style);
+    if (ret != null) {
+        if (ret != "") {
+            args.parentNode.innerHTML = ret;
+        }
+        
+        return false;
+    }
+    else
+        return false;
+}
+function SubCoursesTemp(args, CourseRegId) {
+    var url = '../StudentView/SelectSubCourseTemp.aspx';
+    var params = "CourseRegId=" + CourseRegId + "&dt=" + Date().toString();
+    var style = "center:1;scroll=0;status:0;dialogWidth:500px;dialogHeight:100px";
+
+    url += "?" + params;
+
+    var ret = window.showModalDialog(url, null, style);
+    if (ret != null) {
+        if (ret != "") {
+            args.parentNode.innerHTML = ret;
+        }
+
+        return false;
+    }
+    else
+        return false;
+}
+function GetSubCourse(args,txt, CourseId) {
+    var url = '../StudentView/GetSubCourse.aspx';
+    var params = "CourseId=" + CourseId + "&dt=" + Date().toString();
+    var style = "center:1;scroll=0;status:0;dialogWidth:500px;dialogHeight:100px";
+
+    url += "?" + params;
+
+    var ret = window.showModalDialog(url, null, style);
+    if (ret != null) {
+        if (ret != "") {
+            args.parentNode.innerHTML = ret.split('^')[1];
+            document.getElementById(txt.id).value = ret.split('^')[0];
+        }
+
+        return false;
+    }
+    else
+        return false;
+}
+
+var reqExportData;
+function ExportData(URL, HTTPMode, Params) {
+    if (!HTTPMode)
+        HTTPMode = "Get";
+
+//    window.location = URL;
+    reqExportData = initXMLHTTPRequest();
+    if (reqExportData) {
+        reqExportData.onreadystatechange = onExportData;
+        reqExportData.open(HTTPMode, URL, true);
+        reqExportData.send(Params);
+    }
+}
+function onExportData() {
+    if (reqExportData.readyState == 4) {
+        var data = reqExportData.responseText;
+        
+        if (data != "") {
+            if (data.indexOf("../") >= 0)
+                window.location =data;
+            else
+                alert(data);
+        }
+    }
+
+    return false;
+}
+
+var reqCourses;
+function CoursesData(URL, HTTPMode, Params) {
+    if (!HTTPMode)
+        HTTPMode = "Get";
+    
+    reqCourses = initXMLHTTPRequest();
+    if (reqCourses) {
+        reqCourses.onreadystatechange = onCoursesData;
+        reqCourses.open(HTTPMode, URL, true);
+        reqCourses.send(Params);
+    }
+}
+function onCoursesData() {
+    if (reqCourses.readyState == 4) {
+        var data = reqCourses.responseText;
+        alert(data);
+        if (data != "") {
+            document.getElementById("DivCourses").innerHTML = data;
+            document.getElementById("DivCourses").style.display = "block";
+        }
+    }
+}
+
+function monitorClick(e) {
+    var evt = (e) ? e : event;
+
+    var theElem = (evt.srcElement) ? evt.srcElement : evt.target;
+
+    if (document.getElementById('DivCourses')) {
+        while (theElem != null) {
+            if (theElem.id == "DivCourses" || theElem.id == "clickclick" && document.getElementById(divid).style.display == 'none') {
+                document.getElementById('DivCourses').style.display = 'block';
+                return true;
+            }
+
+            theElem = theElem.offsetParent;
+        }
+        document.getElementById('DivCourses').style.display = 'none';
+    }
+    return true;
+}
+
+document.onclick = monitorClick;
+
+var reqStudGradingCourses;
+function StudGradingCoursesData(URL, HTTPMode, Params) {
+    if (!HTTPMode)
+        HTTPMode = "Get";
+
+    reqStudGradingCourses = initXMLHTTPRequest();
+    if (reqStudGradingCourses) {
+        reqStudGradingCourses.onreadystatechange = onStudGradingCoursesData;
+        reqStudGradingCourses.open(HTTPMode, URL, true);
+        reqStudGradingCourses.send(Params);
+    }
+}
+function onStudGradingCoursesData() {
+    if (reqStudGradingCourses.readyState == 4) {
+        var data = reqStudGradingCourses.responseText;
+
+        if (data == "") {
+            data = "No Data Found";
+            document.getElementById("resultTab").style.display = "none";
+        }
+        else {
+            document.getElementById("resultTab").style.display = "block";
+        }
+        
+        var txt = data.split('^');
+        
+        if (txt.length > 1) {
+            var count = txt[0];
+            data = data.replace(count + "^", "");
+
+            if (document.getElementById("ctl00_cntphmaster_ASPxRoundPanel1_txtRowCount")) {
+                var rows = document.getElementById("ctl00_cntphmaster_ASPxRoundPanel1_txtRowCount").value;
+
+                var Pages = Math.ceil(parseFloat(count) / parseFloat(rows));
+
+                document.getElementById("ctl00_cntphmaster_ASPxRoundPanel1_txtCount").value = Pages;
+
+                document.getElementById("resultPages").innerHTML = (parseInt(document.getElementById("ctl00_cntphmaster_ASPxRoundPanel1_txtPageIndex").value)+1).toString() + " / " + document.getElementById("ctl00_cntphmaster_ASPxRoundPanel1_txtCount").value;
+            }
+        }
+        document.getElementById("resultGrd").innerHTML = data;
+    } else {
+        document.getElementById("resultGrd").innerHTML = "<img src='../../Images/loading.gif' />";
+    }
+}
+
+function OtherPreRequisete() {
+    var url = '../UOB_SystemAdmin/PopUpOtherPrerequisite.aspx';
+    var params = "Flag=" + 1;
+    var style = "center:1;scroll=1;status:0;dialogWidth:450px;dialogHeight:170px";
+
+
+    if (params != "") {
+        var d = new Date();
+        url += "?" + params + "&D=" + d.toString().replace(" ", "");
+    }
+    var ret = window.showModalDialog(url, null, style);
+    if (ret != null) {
+        if (ret == "T") {
+            return true;
+        }
+        else return false;
+    }
+    else
+        return false;
+}
+
+function IsOneDecimalPoint(evt) {
+    var charCode = (evt.which) ? evt.which : event.keyCode; // restrict user to type only one . point in number
+    var parts = evt.srcElement.value.split('.');
+    if (parts.length > 1 && charCode == 46)
+        return false;
+    return true;
+}
+function ClearTextBox(src) {
+    try {
+        if (src.value != "" && (src.value.split(" ")[0] == "__:__" || src.value == "__/__/____")) {
+            src.value = "";
+        }
+    }
+    catch (ex) {
+        src.value = "";
+    }
+}
+
+function RunScript() {
+    $(document).ready(function () {
+        $('#scrollbar_help').tinyscrollbar();
+    });
+
+    $(document).ready(function () {
+        $('#scrollbar_menu_left').tinyscrollbar();
+    });
+
+//    $(document).ready(function () {
+//        $('#scrollbar_all_info').tinyscrollbar();
+//    });
+}
+
+function DoComfirmation(id) {
+    debugger;
+    var src = document.getElementById(id);
+    if (confirm('hi')) {
+        src.value = "1";
+    }
+    else {
+        src.value = "0";
+    }
+
+
+}
+
+function onMouseOver(args) {
+    var cellId = args.id.replace("Header_", "DIV_");
+    document.getElementById(cellId).style.display = "block";
+
+    var ie = document.all ? true : false;
+    var left = 3;
+    var top = 3;
+    var tt = document.getElementById(cellId);
+    var h = top - 20;
+
+//    document.onmousemove = function (e) {
+//        var u = ie ? event.clientY + document.documentElement.scrollTop : e.pageY;
+//        var l = ie ? event.clientX + document.documentElement.scrollLeft : e.pageX;
+//        tt.style.top = (u - h) + 'px';
+//        tt.style.left = (l + left) + 'px';
+//    };
+}
+
+function onMouseOut(args) {
+    var cellId = args.id.replace("Header_", "DIV_");
+    document.getElementById(cellId).style.display = "none";
+}

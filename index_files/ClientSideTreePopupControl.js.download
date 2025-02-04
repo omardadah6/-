@@ -1,0 +1,86 @@
+﻿// JScript File
+function pageLoad(sender, args) {
+        var ie5 = document.all && document.getElementById;
+        var ns6 = document.getElementById && !document.all;
+
+        var _nodeFullPath;
+        var _nodeId;
+        var dialogIsOpened = false;
+        var fullId = '';
+
+        window.onload = function () {
+            if (fullId != '')
+                document.getElementById(fullId + '_ASPxPopupControl_Panel1').style.display = 'none';
+        }
+
+    }
+
+
+        function SelectCountryNode(e, evt, nodeId, DisplayText, natureId) {
+            document.getElementById(evt + "_txtPath").value = DisplayText;
+            document.getElementById(evt + "_hidGsCountryNodeID").value = nodeId;
+
+            var panel = document.getElementById(evt + '_Panel1');
+            panel.style.display = "none";
+        }
+        //selected node click handler
+        function SelectNode(e, evt, nodeId, DisplayText, natureId) {
+            document.getElementById(evt + "_txtPath").value = DisplayText;
+            document.getElementById(evt + "_hidEntityMainID").value = nodeId;
+            document.getElementById(evt + "_btntreeclickclose").click();
+
+            var panel = document.getElementById(evt + '_PopUpDiv');
+            panel.style.display = "none";
+
+        }
+
+        //Clear button click handler
+        function linkClear_OnClick(evt) {
+            document.getElementById(evt + '_hidID').value = "";
+            //restore the path of the selected Node
+            document.getElementById(evt + '_hidPath').value = "";
+            //restore the full path of the selected Node
+            document.getElementById(evt + '_hidValue').value = "";
+            document.getElementById(evt + '_txtPath').value = "";
+            document.getElementById(evt + '_ASPxPopupControl_Panel1').style.display = 'none';
+            document.getElementById(evt + '_txtPath').select();
+            document.getElementById(evt + '_txtPath').blur();
+        }
+
+        function txtPath_OnChange(evt) {
+            //if(!dialogIsOpened) return;   
+            __doPostBack(evt + '_txtPath', '');
+        }
+
+        //btnDisplay click handler
+        function btnDisplay_OnClick(evt) {
+            var panel = document.getElementById(evt + '_Panel1');
+            panel.style.display = "block";
+        }
+
+        //page client side load handler
+       
+//function GetJqueryScript(msg) {
+//        $('#dialog').text('');
+//        $('<p>' + msg.toString() + '</p>').appendTo('#dialog');
+//        $('#dialog').dialog({ autoOpen: false,
+//            stack: true,            
+//            position: "center",
+//            width: 400, height: 180,
+//            title: 'UMIS - Informatique',
+//            modal: true,
+//            show: 'slide',
+//            hide: 'slide',           
+//            buttons: { 'Ok': function () { $(this).dialog('close'); } }
+//        });
+//        $("#dialog").dialog("option", "draggable", true);
+//        $("#dialog").dialog({ resizable: true });
+//         $('#dialog').dialog('open');
+//            return false;
+//  }
+
+
+
+function GetJqueryScript(msg, num, type) {
+            alert(msg, num, type);
+        }

@@ -1,0 +1,440 @@
+﻿function AutoCompleteInitGetPos(obj)
+{
+    var topValue = 0, leftValue = 0;
+    while (obj)
+    {
+        leftValue += obj.offsetLeft;
+        topValue += obj.offsetTop;
+        obj = obj.offsetParent;
+    }
+
+    return { x: leftValue, y: topValue };
+}
+function AutoCompleteInit(src, targetUrl) {
+   
+    src.TargetUrl = targetUrl;
+    src.OldValue = src.value;
+    src.InitialValue = src.value;
+
+    var pos = AutoCompleteInitGetPos(src);
+    
+    var pnl = document.createElement("DIV");
+    pnl.id = "UMISAutoComplete_" + src.id;
+    document.body.insertBefore(pnl, document.body.childNodes[0]);
+    
+    pnl.className = "AutoCompletePanel";
+//    if (document.getBoxObjectFor) {
+//        
+        pnl.style.left = (pos.x).toString() + "px";
+        pnl.style.top = (pos.y + src.offsetHeight).toString() + "px";
+        pnl.style.width = src.offsetWidth.toString() + "px";
+        pnl.style.height = "200px";
+        pnl.style.overflow = 'auto';
+//    }
+//    else {
+//    
+//        pnl.style.pixelLeft = pos.x; 
+//        pnl.style.pixelTop = pos.y + src.offsetHeight + document.documentElement.scrollLeft;
+//        pnl.style.pixelWidth = src.offsetWidth;
+//        pnl.style.height = 200;
+//        pnl.style.overflow = 'auto';
+//    }
+    src.Panel = pnl;
+    
+    pnl.Invoker = src;
+}
+function AutoCompleteBlur(src)
+{
+
+    //var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return true;
+
+    pnl.style.display = "none";
+    src.value = src.value.replace(" ", " ");
+    src.OldValue = src.value;
+    
+    if(src.InitialValue != src.value && src.onchange != null)
+        src.onchange();
+        
+    return true;
+}
+function AutoCompleteKeyDown(src, e) {
+
+    
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return true;
+        
+    var keyCode;
+    if (window.event) // IE
+        keyCode = e.keyCode;
+    else if (e.which) // Netscape/Firefox/Opera
+        keyCode = e.which;
+
+    var table = pnl.childNodes[0];
+    if (table != "[object HTMLTableElement]") {
+        if (keyCode == 13) {
+            pnl.style.display = "none";
+            src.blur();
+        }
+        return true;
+    }
+
+    var selRow = table.SelectedRow;
+    var rowCount = table.rows.length;
+    if (selRow == null) {
+        selRow = -1;
+    }
+   
+    var changeSelection = false;
+    switch (keyCode)
+    {
+        case 13: //Enter
+            pnl.style.display = "none";
+            src.blur();
+            return false;
+        case 27: //Esc
+            pnl.style.display = "none";
+            pnl.innerHTML = "";
+            return false;
+        case 38: //up
+            if (selRow == -1)
+                selRow = rowCount - 1;
+            else
+                selRow = selRow - 1;
+
+            changeSelection = true;
+            break;
+        case 40: //down
+            if (selRow == -1)
+                selRow = 0;
+            else
+                selRow = selRow + 1;
+
+            changeSelection = true;
+            break;
+        default:
+            return true;
+    }
+    if (changeSelection)
+    {
+        if (table.SelectedRow != null && table.SelectedRow >= 0 && table.SelectedRow < rowCount)
+            table.rows[table.SelectedRow].className = "";
+
+        var value = pnl.SearchValue;
+        if (selRow >= 0 && selRow < rowCount) {
+           
+            table.SelectedRow = selRow;
+            table.rows[selRow].className = "Selected";
+            value = table.rows[selRow].cells[0].innerText.replace(" ", " ");
+        }
+        else
+        {
+            table.SelectedRow = null;
+        }
+
+        src.value = value;
+        src.OldValue = src.value;
+        return false;
+    }
+    return true;
+}
+function AutoCompleteKeyUp(src)
+{
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    ShowHint(src, src.value);
+}
+function AutoCompleteKeyUpApplByCode(src, edAcadYearId, edCodeSemesterId, asCodeDegreeClassId, admCdeAppTypeId) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    if (src.value.length >= 6)
+        ShowHint(src, src.value + "^" + edAcadYearId + "^" + edCodeSemesterId + "^" + asCodeDegreeClassId + "^" + admCdeAppTypeId);
+}
+function AutoCompleteKeyUpCourseSection(src, edAcadYearId, edCodeSemesterId, saStfMemberId, edCourseId, scScheduleDtlId, AsCodeDegreeClassId) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    ShowHint(src, edAcadYearId + "^" + edCodeSemesterId + "^" + saStfMemberId + "^" + edCourseId + "^" + scScheduleDtlId + "^" + AsCodeDegreeClassId + "^" + src.value);
+}
+function AutoCompleteKeyUp2(src,Fac,Dept) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    ShowHint(src, Fac + "^" + Dept + "^" + src.value);
+}
+function AutoCompleteKeyUp3(src, Fac,IsActive) {
+    //    var pnl = src.Panel;
+   // alert(src.id);
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+   if (src.value.length >= 2)
+        ShowHint(src, Fac + "^" + IsActive + "^" + src.value);
+}
+
+function AutoCompleteKeyUpFindByFacAndLvl(src, Fac, IsActive,Lvl) {
+    //    var pnl = src.Panel;
+    //debugger;
+     //alert(src.id);
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    if (src.value.length >= 2)
+        ShowHint(src, Fac + "^" + IsActive + "^" + Lvl + "^" + src.value);
+}
+function AutoCompleteKeyUp4(src, Fac,AcadYear,Sem) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    ShowHint(src, Fac + "^" + AcadYear + "^" + Sem + "^" + src.value);
+}
+
+function AutoCompleteKeyUpOffered(src, Fac, AcadYear, Sem, EntMainId, onlineFlg, edCodeCourseId, staffMemId, AsCodeDegreeClassId) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    ShowHint(src, (Fac == null ? "" : Fac) + "^" + AcadYear + "^" + Sem + "^" + (EntMainId == null ? "" : EntMainId) + "^" + (onlineFlg == null ? "" : onlineFlg) + "^" + (edCodeCourseId == null ? "" : edCodeCourseId) + "^" + (staffMemId == null ? "" : staffMemId) + "^" +(AsCodeDegreeClassId == null ? "" : AsCodeDegreeClassId) + "^"  + src.value);
+}
+
+
+function AutoCompleteKeyUp44(src, lang,facId, entMain) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    ShowHint(src, lang + "^" + facId + "^" + entMain + "^" + src.value);
+}
+
+function AutoCompleteKeyUp5(src, Dept,Fac,AcadYear,Sem,IsAct,AsCodeDegreeClassid,AsCodeDegreeId) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    if (src.value.length >= 6)
+        ShowHint(src, Dept + "^" + Fac + "^" + AcadYear + "^" + Sem + "^" + IsAct + "^" + AsCodeDegreeClassid + "^" + AsCodeDegreeId + "^" + src.value);
+}
+function AutoCompleteKeyUp6(src) {
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+
+    if (src.value.length >= 6)
+        ShowHint(src, src.value);
+}
+
+
+//MSH - 9-11-2018
+function AutoCompleteKeyUpParentCourses(src, Fac) {
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl == null)
+        return;
+
+    if (src.OldValue == null)
+        src.OldValue = "";
+
+    var hasChanged = false;
+    if (src.OldValue != src.value)
+        hasChanged = true;
+
+    src.OldValue = src.value;
+    if (!hasChanged)
+        return;
+    ShowHint(src, Fac + "^" + src.value);
+
+}
+//end
+
+function ShowHint(src, str) {
+    
+    //    var pnl = src.Panel;
+    var pnl = document.getElementById("UMISAutoComplete_" + src.id);
+    if (pnl === null)
+        return;
+
+    var xmlhttp;
+    if (str.length == 0)
+    {
+        pnl.innerHTML = "";
+        pnl.style.display = "none";
+        return;
+    }
+    if (window.XMLHttpRequest)
+    {// code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp = new XMLHttpRequest();
+    }
+    else
+    {// code for IE6, IE5
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            //            if (src.value != str)
+            //                return;
+
+            pnl.SearchValue = "";
+            pnl.innerHTML = xmlhttp.responseText;
+          
+            var table = pnl.childNodes[0];
+            if (table == "[object HTMLTableElement]") {
+                for (var i = 0; i < table.rows.length; i++) {
+                    var r = table.rows[i];
+
+                    r.onmousedown = function () { src.value = this.cells[0].innerText.replace(" ", " "); };
+                    r.onmouseover = function () { r.parentElement.SelectedRow = r.rowIndex; this.className = "Selected"; };
+                    r.onmouseout = function () { r.parentElement.SelectedRow = null; this.className = ""; };
+                }
+            }
+
+            pnl.style.display = "block";
+        }
+    }
+    xmlhttp.open("GET", src.TargetUrl + "QueryString=" + str, true);
+    xmlhttp.send(null);
+}

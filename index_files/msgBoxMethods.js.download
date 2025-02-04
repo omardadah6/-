@@ -1,0 +1,63 @@
+﻿
+//function GetJQueryMsg(msg, typ) {
+//    $.msgBox({
+//        title: 'UMIS - INFORMATIQUE',
+//        content: msg,
+//        type: typ
+
+//    });
+
+//}
+
+function GetJQueryMsg(msg, typ) {
+    alert(msg);
+}
+
+
+
+//function ReturnConfirm(sender, msg) {
+//    if (sender.isApproved == undefined) {
+//        sender.setAttributeNode(document.createAttribute("isApproved"));
+//        sender.isApproved = false;
+//    }
+//    if (!sender.isApproved) {
+//        $.msgBox({
+//            title: "Are You Sure?",
+//            content: msg,
+//            type: "confirm",
+//            buttons: [{ value: "Yes" }, { value: "No" }, { value: "Cancel"}],
+//            success: function (result) {
+//                if (result == "Yes") {
+//                    sender.isApproved = true;
+//                    sender.click();
+//                }
+//            }
+//        });
+//    }
+//    return sender.isApproved;
+//}
+
+function ReturnConfirm(sender, msg) {
+    return confirm(msg);
+}
+
+//window.onload = init;
+//function init() {
+//    shortcut("Space", function () {
+//        //markCallled("just1");
+//        HideMSG();
+//    });
+//}
+function markCalled(msg) {
+    alert(msg);
+}
+
+function HideMSG() {
+    var msgbtn = $('.msgButton');
+    if (msgbtn.length > 0) {
+        msgbtn.click();
+    }
+}
+
+
+

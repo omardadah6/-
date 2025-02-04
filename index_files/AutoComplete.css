@@ -1,0 +1,30 @@
+﻿.AutoCompletePanel
+{
+	font-size: 10px;
+	border: solid 1px lightskyblue;
+	margin-top: 2px;
+	display: none;
+	position: absolute;
+	background-color: #FEFEFE;
+	padding: 2px;
+	z-index: 15000;
+	height:200px;
+	overflow:hidden;
+	top:0px;
+}
+.AutoCompletePanel TABLE
+{
+	width: 100%;
+}
+.AutoCompletePanel TABLE TR
+{
+	cursor: default;
+}
+.AutoCompletePanel TABLE TR.Selected
+{
+	background-color: LightSkyBlue;
+}
+.AutoCompletePanel TABLE TD
+{
+	text-align: left;
+}
